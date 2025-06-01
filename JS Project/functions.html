@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <meta charset="UTF-8" />
+        <title>Title</title>
+    </head>
+    <body>
+        <h1 id="heading" onclick="changeText()">JavaScript</h1>
+        <p id="addition"></p>
+        
+        <script>
+            document.getElementById("addition").innerHTML = addNumbers(10, 20);
+            
+            function changeText()
+            {
+                if(document.getElementById("heading").innerHTML == 'JavaScript')
+                {document.getElementById("heading").innerHTML = 'is awesome';
+                }
+                else
+                {document.getElementById("heading").innerHTML = 'JavaScript'
+                }
+            }
+        
+            function addNumbers(num1, num2){
+                return num1 + num2;
+            }
+            
+        </script>
+    
+    
+    
+    </body>
+</html>
