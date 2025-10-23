@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConnectOne - Live Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            --accent-teal: #00D4AA;
+            --dark-bg: #0F0F1F;
+            --surface: #1A1B2F;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B3C2;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-light: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .screen {
+            min-height: 100vh;
+            padding: 20px;
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .floating-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.3;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .orb-1 { width: 200px; height: 200px; background: #667EEA; top: 10%; right: 10%; }
+        .orb-2 { width: 150px; height: 150px; background: var(--accent-teal); bottom: 20%; left: 5%; animation-delay: 2s; }
+        .orb-3 { width: 100px; height: 100px; background: #764BA2; top: 50%; right: 20%; animation-delay: 4s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        /* Common Components */
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color:transparent;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        /* Screen 1: Welcome */
+        #welcome-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .welcome-content {
+            text-align: center;
+        }
+
+        .phone-mockup {
+            width: 200px;
+            height: 400px;
+            background: var(--surface);
+            border-radius: 24px;
+            margin: 0 auto 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .app-preview {
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .preview-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .headline {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .subhead {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        /* Screen 2: Permissions */
+        .progress-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            flex: 1;
+        }
+
+        .progress-track {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .permission-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .permission-info h4 {
+            margin-bottom: 4px;
+        }
+
+        .permission-info p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .toggle {
+            width: 50px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle.active {
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        .toggle.active::after {
+            background: #667EEA;
+            left: 26px;
+        }
+
+        /* Screen 3: Offers */
+        .offers-grid {
+            display: grid;
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        .offer-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offer-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--accent-teal);
+            color: var(--dark-bg);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .offer-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .offer-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .offer-details h3 {
+            margin-bottom: 4px;
+        }
+
+        .offer-details p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .offer-features {
+            list-style: none;
+            margin: 12px 0;
+        }
+
+        .offer-features li {
+            padding: 4px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .offer-features li::before {
+            content: '✓ ';
+            color: var(--accent-teal);
+            font-weight: bold;
+        }
+
+        .offer-price {
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .price {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .price-note {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        /* Screen 4: Installation */
+        .installation-progress {
+            text-align: center;
+            margin: 60px 0;
+        }
+
+        .progress-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: conic-gradient(#667EEA var(--progress, 0%), rgba(255,255,255,0.1) 0%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--surface);
+            border-radius: 50%;
+        }
+
+        .progress-text {
+            position: relative;
+            z-index: 2;
+            font-weight: 600;
+        }
+
+        .status-message {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+
+        /* Screen 5: Dashboard */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-user {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .current-plan {
+            background: var(--primary-gradient);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .data-usage {
+            margin: 20px 0;
+        }
+
+        .usage-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .usage-fill {
+            height: 100%;
+            background: var(--accent-teal);
+            border-radius: 4px;
+            width: 65%;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 30px 0;
+        }
+
+        .action-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            border-color: #667EEA;
+        }
+
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        /* Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            padding: 12px 20px;
+            justify-content: space-around;
+        }
+
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="floating-orb orb-1"></div>
+        <div class="floating-orb orb-2"></div>
+        <div class="floating-orb orb-3"></div>
+    </div>
+
+    <!-- Screen 1: Welcome -->
+    <div class="screen active" id="welcome-screen">
+        <div class="container">
+            <div class="welcome-content">
+                <div class="logo">
+                    <h1>ConnectOne</h1>
+                </div>
+                
+                <div class="phone-mockup">
+                    <div class="app-preview">
+                        <div class="preview-card">
+                            <span>🏦</span> Bank Offers
+                        </div>
+                        <div class="preview-card">
+                            <span>🛍️</span> Retail Deals
+                        </div>
+                        <div class="preview-card">
+                            <span>📦</span> Data Packs
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="headline">One SIM.<br>Endless Perks.</h2>
+                <p class="subhead">Your favorite brands' mobile offers, all in one app. Switch instantly, keep your number.</p>
+                
+                <button class="btn btn-primary" onclick="showScreen('permissions-screen')">
+                    Get Started
+                </button>
+                
+                <p style="color: var(--text-secondary); font-size: 14px; margin-top: 20px;">
+                    🔒 Your number stays private & secure
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Permissions -->
+    <div class="screen" id="permissions-screen">
+        <div class="container">
+            <div class="progress-header">
+                <div class="back-btn" onclick="showScreen('welcome-screen')">←</div>
+                <div class="progress-bar">
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 33%"></div>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Step 1 of 3</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 40px;">
+                <div style="width: 60px; height: 60px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 24px;">
+                    🔐
+                </div>
+                <h2 style="margin-bottom: 8px;">Quick Permissions</h2>
+                <p style="color: var(--text-secondary);">We need these to make ConnectOne work seamlessly</p>
+            </div>
+
+            <div class="card">
+                <div class="permission-item">
+                    <div>
+                        <h4>eSIM Access</h4>
+                        <p>Install digital plans instantly</p>
+                    </div>
+                    <div class="toggle active" onclick="togglePermission(this)"></div>
+                </div>
+                
+                <div class="permission-item">
+                    <div>
+                        <h4>Smart Notifications</h4>
+                        <p>Data alerts & exclusive offers</p>
+                    </div>
+                    <div class="toggle" onclick="togglePermission(this)"></div>
+                </div>
+                
+                <div class="permission-item" style="border-bottom: none;">
+                    <div>
+                        <h4>Location Access <span style="background: rgba(0,212,170,0.2); color: var(--accent-teal); padding: 2px 8px; border-radius: 8px; font-size: 12px;">Optional</span></h4>
+                        <p>Show relevant local offers</p>
+                    </div>
+                    <div class="toggle" onclick="togglePermission(this)"></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3); border-radius: 12px; padding: 12px 16px; color: var(--accent-teal); font-size: 14px;">
+                    🔒 We never share your personal number
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="showScreen('welcome-screen')">
+                Maybe Later
+            </button>
+            <button class="btn btn-primary" onclick="showScreen('offers-screen')">
+                Continue →
+            </button>
+        </div>
+    </div>
+
+    <!-- Screen 3: Offers -->
+    <div class="screen" id="offers-screen">
+        <div class="container">
+            <div class="progress-header">
+                <div class="back-btn" onclick="showScreen('permissions-screen')">←</div>
+                <div class="progress-bar">
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: 66%"></div>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Step 2 of 3</div>
+                </div>
+            </div>
+
+            <h2 style="text-align: center; margin-bottom: 30px;">Choose Your First Plan</h2>
+
+            <div class="offers-grid">
+                <div class="card offer-card">
+                    <div class="offer-badge">POPULAR</div>
+                    <div class="offer-header">
+                        <div class="offer-icon">🏦</div>
+                        <div class="offer-details">
+                            <h3>Starter Pack</h3>
+                            <p>Perfect for trying out ConnectOne</p>
+                        </div>
+                    </div>
+                    <ul class="offer-features">
+                        <li>1GB High-speed data</li>
+                        <li>Valid for 7 days</li>
+                        <li>Access to all partners</li>
+                    </ul>
+                    <div class="offer-price">
+                        <div class="price">FREE</div>
+                        <div class="price-note">Sponsored by Partner Bank</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="selectOffer('starter')">Activate Free</button>
+                </div>
+
+                <div class="card offer-card">
+                    <div class="offer-header">
+                        <div class="offer-icon">🛍️</div>
+                        <div class="offer-details">
+                            <h3>Data Pro</h3>
+                            <p>For heavy users</p>
+                        </div>
+                    </div>
+                    <ul class="offer-features">
+                        <li>5GB High-speed data</li>
+                        <li>Valid for 30 days</li>
+                        <li>Priority support</li>
+                        <li>Bonus 100 reward points</li>
+                    </ul>
+                    <div class="offer-price">
+                        <div class="price">R99</div>
+                        <div class="price-note">Save 20% this month</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="selectOffer('pro')">Select Plan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 4: Installation -->
+    <div class="screen" id="installation-screen">
+        <div class="container">
+            <div class="installation-progress">
+                <div class="progress-circle" id="progress-circle">
+                    <div class="progress-text" id="progress-text">0%</div>
+                </div>
+                <h2 id="status-title">Preparing Installation</h2>
+                <p class="status-message" id="status-message">Getting everything ready for your new plan...</p>
+            </div>
+
+            <div class="card">
+                <h4 style="margin-bottom: 12px;">📦 Plan Details</h4>
+                <div id="plan-details">
+                    <p>1GB Data Plan · 7 days validity</p>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-top: 8px;">Sponsored by Partner Bank</p>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="showScreen('offers-screen')" style="display: none;" id="back-btn">
+                Choose Different Plan
+            </button>
+        </div>
+    </div>
+
+    <!-- Screen 5: Dashboard -->
+    <div class="screen" id="dashboard-screen">
+        <div class="container">
+            <div class="dashboard-header">
+                <div class="welcome-user">Welcome! 👋</div>
+                <p style="color: var(--text-secondary);">You're all set up with ConnectOne</p>
+            </div>
+
+            <div class="current-plan">
+                <h3 style="margin-bottom: 16px;">📱 Active Plan</h3>
+                <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">1GB Data</div>
+                <p style="color: rgba(255,255,255,0.8);">7 days remaining</p>
+                
+                <div class="data-usage">
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span>0.35GB used</span>
+                        <span>1GB total</span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="action-btn" onclick="showScreen('offers-screen')">
+                    <div class="action-icon">🛍️</div>
+                    <div>Browse Offers</div>
+                </div>
+                <div class="action-btn">
+                    <div class="action-icon">🏦</div>
+                    <div>My Rewards</div>
+                </div>
+                <div class="action-btn">
+                    <div class="action-icon">📊</div>
+                    <div>Usage</div>
+                </div>
+                <div class="action-btn">
+                    <div class="action-icon">⚙️</div>
+                    <div>Settings</div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 16px;">Featured Offers</h3>
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-gradient); border-radius: 10px; display: flex; align-items: center; justify-content: center;">🛒</div>
+                    <div>
+                        <h4>Retailer Weekly Special</h4>
+                        <p style="color: var(--text-secondary); font-size: 14px;">Extra 500MB with any purchase</p>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 12px;">Redeem Offer</button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">🛍️</div>
+                <div class="nav-label">Browse</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">📱</div>
+                <div class="nav-label">My Plans</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">🎁</div>
+                <div class="nav-label">Rewards</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Screen navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Permission toggles
+        function togglePermission(toggle) {
+            toggle.classList.toggle('active');
+        }
+
+        // Offer selection
+        function selectOffer(planType) {
+            const planDetails = document.getElementById('plan-details');
+            if (planType === 'starter') {
+                planDetails.innerHTML = `
+                    <p>1GB Data Plan · 7 days validity</p>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-top: 8px;">Sponsored by Partner Bank</p>
+                `;
+            } else {
+                planDetails.innerHTML = `
+                    <p>5GB Data Plan · 30 days validity</p>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-top: 8px;">Includes 100 bonus points</p>
+                `;
+            }
+            
+            showScreen('installation-screen');
+            simulateInstallation();
+        }
+
+        // Simulate installation process
+        function simulateInstallation() {
+            const circle = document.getElementById('progress-circle');
+            const text = document.getElementById('progress-text');
+            const title = document.getElementById('status-title');
+            const message = document.getElementById('status-message');
+            const backBtn = document.getElementById('back-btn');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2;
+                circle.style.setProperty('--progress', progress +'%');
+                text.textContent = progress +'%';
+
+                if (progress === 20) {
+                    title.textContent = "Downloading Profile";
+                    message.textContent = "Getting your digital SIM profile...";
+                } else if (progress === 60) {
+                    title.textContent = "Installing eSIM";
+                    message.textContent = "Almost there! Configuring your new plan...";
+                } else if (progress === 90) {
+                    title.textContent = "Finalizing Setup";
+                    message.textContent = "Just a few more seconds...";
+                } else if (progress >= 100) {
+                    clearInterval(interval);
+                    title.textContent = "🎉 All Set!";
+                    message.textContent = "Your ConnectOne plan is now active!";
+                    backBtn.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        showScreen('dashboard-screen');
+                    }, 2000);
+                }
+            }, 100);
+        }
+
+        // Bottom nav interactions
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
